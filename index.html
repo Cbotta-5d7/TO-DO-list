@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>To Do List Pro</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -589,7 +592,7 @@
 </div>
 
 <!-- ══ Modal ══ -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+<div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-header">
       <h2 id="modal-title">Nouvelle tâche</h2>
@@ -638,7 +641,7 @@
 </div>
 
 <!-- Token dialog -->
-<div class="modal-overlay" id="token-overlay" onclick="if(event.target===this)closeTokenDialog()">
+<div class="modal-overlay" id="token-overlay">
   <div class="modal" style="max-width:440px">
     <div class="modal-header">
       <h2>⚙️ Synchronisation cloud</h2>
