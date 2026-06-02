@@ -546,10 +546,10 @@
 
     .container { padding: 10px 8px; }
 
-    .stats { gap: 5px; margin-bottom: 10px; }
-    .stat-card { padding: 6px 10px; min-width: 60px; }
-    .stat-card .num { font-size: 1.15rem; }
-    .stat-card .lbl { font-size: .62rem; }
+    .stats { gap: 4px; margin-bottom: 10px; flex-wrap: nowrap; }
+    .stat-card { padding: 5px 6px; min-width: 0; flex: 1; }
+    .stat-card .num { font-size: 1.05rem; }
+    .stat-card .lbl { font-size: .55rem; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .toolbar { gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
     .toolbar input[type=search] { width: 100%; min-width: unset; padding: 7px 10px; font-size: .82rem; }
