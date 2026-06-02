@@ -6,9 +6,11 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <polygon points="296,28 148,284 236,284 204,484 372,212 276,212 324,28"
+  <!-- Éclair en haut -->
+  <polygon points="290,40 158,240 234,240 206,370 358,190 278,190 318,40"
            fill="url(#bolt)"/>
-  <text x="256" y="490" font-family="'Helvetica Neue',Arial,sans-serif"
-        font-weight="700" font-size="60" text-anchor="middle"
-        fill="rgba(255,255,255,0.5)" letter-spacing="8">Tasks</text>
+  <!-- Tasks centré -->
+  <text x="256" y="450" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-weight="800" font-size="90" text-anchor="middle"
+        fill="white" letter-spacing="-2">Tasks</text>
 </svg>
