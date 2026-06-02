@@ -6,7 +6,13 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>To Do List Pro</title>
+<title>To Do List Christophe</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4338ca">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ToDo CB">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -168,34 +174,33 @@
   /* ── Op Status panel (right side) ── */
   .op-status-panel {
     display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 6px;
-    padding: 12px 14px; border-left: 1px solid var(--border);
-    min-width: 110px; flex-shrink: 0; background: #fafafa;
+    justify-content: center; gap: 3px;
+    padding: 8px 10px; border-left: 1px solid var(--border);
+    min-width: 82px; flex-shrink: 0; background: #fafafa;
     border-radius: 0 var(--radius) 0 0;
   }
   .op-status-panel .panel-lbl {
-    font-size: .65rem; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--text-muted); font-weight: 700; margin-bottom: 2px;
+    font-size: .58rem; text-transform: uppercase; letter-spacing: .4px;
+    color: var(--text-muted); font-weight: 700; margin-bottom: 1px;
   }
   .op-radio {
-    display: flex; align-items: center; gap: 7px;
-    width: 100%; cursor: pointer; padding: 5px 8px;
-    border-radius: 7px; transition: background .12s;
-    user-select: none;
+    display: flex; align-items: center; gap: 5px;
+    width: 100%; cursor: pointer; padding: 3px 6px;
+    border-radius: 6px; transition: background .12s; user-select: none;
   }
   .op-radio:hover { background: var(--border); }
   .op-radio input[type=radio] { display: none; }
   .op-radio-dot {
-    width: 13px; height: 13px; border-radius: 50%;
+    width: 10px; height: 10px; border-radius: 50%;
     border: 2px solid currentColor; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     transition: all .15s;
   }
   .op-radio input:checked + .op-radio-dot::after {
-    content: ''; width: 6px; height: 6px;
+    content: ''; width: 4px; height: 4px;
     border-radius: 50%; background: currentColor; display: block;
   }
-  .op-radio-label { font-size: .78rem; font-weight: 600; }
+  .op-radio-label { font-size: .68rem; font-weight: 600; }
 
   /* Colors per status */
   .op-radio.alancer  { color: #6366f1; }
@@ -1664,6 +1669,11 @@ function saveToken() {
   toast('Token enregistré !');
   if (tasks.length === 0) pullFromGist();
   else saveToGist();
+}
+
+/* ══ PWA ══ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
 /* ══ INIT ══ */
