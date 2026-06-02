@@ -722,10 +722,7 @@
           <label>Deadline</label>
           <input type="date" id="f-deadline">
         </div>
-        <div class="form-group">
-          <label>Assigné à</label>
-          <input type="text" id="f-assignee" placeholder="Nom…">
-        </div>
+
       </div>
       <div class="form-group">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
@@ -802,7 +799,7 @@
 /* ═══════════════════════════════════════════
    DATA MODEL
    id, title, desc, category, priority,
-   assignee, deadline,
+   deadline,
    createdAt, closedAt, status (open|done)
 ═══════════════════════════════════════════ */
 
@@ -1191,7 +1188,7 @@ function taskCard(t) {
           ${t.category ? `<span class="badge badge-cat">📁 ${escHtml(t.category)}</span>` : ''}
           <span class="badge badge-prio-${t.priority}">${prioIcon[t.priority]} ${prioLabel[t.priority]}</span>
           ${t.deadline ? `<span class="badge badge-deadline ${ds||''}">📅 ${fmtDate(t.deadline)}</span>` : ''}
-          ${t.assignee ? `<span class="badge" style="background:#f1f5f9;color:var(--text-muted)">👤 ${escHtml(t.assignee)}</span>` : ''}
+
         </div>
         <!-- Timeline -->
         ${timelineHtml(t)}
@@ -1270,7 +1267,6 @@ function openTaskSheet(id) {
       ${t.category ? `<span class="badge badge-cat">📁 ${escHtml(t.category)}</span>` : ''}
       <span class="badge badge-prio-${t.priority}">${prioIcon[t.priority]} ${prioLabel[t.priority]}</span>
       ${t.deadline ? `<span class="badge badge-deadline ${ds||''}">📅 ${fmtDate(t.deadline)}${daysLabel ? ' · '+daysLabel : ''}</span>` : ''}
-      ${t.assignee ? `<span class="badge" style="background:#f1f5f9;color:var(--text-muted)">👤 ${escHtml(t.assignee)}</span>` : ''}
     </div>
     <!-- Timeline -->
     ${timelineHtml(t)}
@@ -1563,7 +1559,6 @@ function openModal(id) {
     document.getElementById('f-cat').value      = t.category || '';
     document.getElementById('f-prio').value     = t.priority;
     document.getElementById('f-deadline').value = t.deadline || '';
-    document.getElementById('f-assignee').value = t.assignee || '';
     _modalPhotos = (t.photos || []).map(p => ({...p}));
   } else {
     document.getElementById('f-title').value    = '';
@@ -1571,7 +1566,6 @@ function openModal(id) {
     document.getElementById('f-cat').value      = '';
     document.getElementById('f-prio').value     = 'medium';
     document.getElementById('f-deadline').value = '';
-    document.getElementById('f-assignee').value = '';
   }
   renderModalPhotos();
   overlay.classList.add('open');
@@ -1597,7 +1591,6 @@ function saveTask() {
     t.category = document.getElementById('f-cat').value.trim();
     t.priority = document.getElementById('f-prio').value;
     t.deadline = document.getElementById('f-deadline').value;
-    t.assignee = document.getElementById('f-assignee').value.trim();
     t.photos   = _modalPhotos;
     toast('Tâche modifiée ✏️');
   } else {
@@ -1608,7 +1601,6 @@ function saveTask() {
       category: document.getElementById('f-cat').value.trim(),
       priority: document.getElementById('f-prio').value,
       deadline: document.getElementById('f-deadline').value,
-      assignee: document.getElementById('f-assignee').value.trim(),
       createdAt: new Date().toISOString(),
       closedAt:  null,
       status:    'open',
@@ -1634,7 +1626,6 @@ function exportExcel() {
     'Description': t.desc || '',
     'Catégorie':   t.category || '',
     'Priorité':    prioMap[t.priority] || t.priority,
-    'Assigné à':   t.assignee || '',
     'Deadline':    t.deadline || '',
     'Statut':      statusMap[t.status] || t.status,
     'Avancement':  (OP_STATUS[t.opStatus] || OP_STATUS.alancer).label,
@@ -1710,7 +1701,6 @@ function handleImport(e) {
           desc:      r['Description'] || '',
           category:  r['Catégorie'] || '',
           priority:  prioMap[r['Priorité']] || 'medium',
-          assignee:  r['Assigné à'] || '',
           deadline:  r['Deadline'] || '',
           status:    statusMap[r['Statut']] || 'open',
           createdAt: existing ? existing.createdAt : new Date().toISOString(),
@@ -1810,7 +1800,7 @@ function saveFlash() {
   if (!title) { el.focus(); shake('flash-title'); return; }
   tasks.push({
     id: uid(), title,
-    desc: '', category: '', priority: 'medium', deadline: '', assignee: '',
+    desc: '', category: '', priority: 'medium', deadline: '',
     createdAt: new Date().toISOString(), closedAt: null,
     status: 'open', opStatus: 'alancer',
     actions: [], photos: [..._flashPhotos]
