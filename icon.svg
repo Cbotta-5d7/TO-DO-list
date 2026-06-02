@@ -2,22 +2,24 @@
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#1e1b4b"/>
-      <stop offset="50%" style="stop-color:#3730a3"/>
       <stop offset="100%" style="stop-color:#4f46e5"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="0%" y1="0%" x2="60%" y2="100%">
-      <stop offset="0%" style="stop-color:#fde68a"/>
+    <linearGradient id="bolt" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff7ed"/>
       <stop offset="100%" style="stop-color:#f59e0b"/>
     </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <!-- Background rounded square -->
-  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
-  <!-- Subtle inner glow -->
-  <rect width="512" height="512" rx="110" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
-  <!-- Lightning bolt -->
-  <polygon points="295,48 188,278 248,278 218,464 340,216 272,216 315,48" fill="url(#bolt)" opacity="0.92"/>
-  <!-- CB initials -->
-  <text x="256" y="398" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="88" text-anchor="middle" fill="white" opacity="0.95" letter-spacing="-2">CB</text>
-  <!-- todo label -->
-  <text x="256" y="458" font-family="Arial, sans-serif" font-weight="600" font-size="52" text-anchor="middle" fill="rgba(255,255,255,0.55)" letter-spacing="8">todo</text>
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+  <!-- Lightning bolt — grand et centré -->
+  <polygon points="300,30 160,290 240,290 212,482 368,210 280,210 330,30"
+           fill="url(#bolt)" filter="url(#glow)"/>
+  <!-- Tasks -->
+  <text x="256" y="478" font-family="'Helvetica Neue', Arial, sans-serif"
+        font-weight="700" font-size="66" text-anchor="middle"
+        fill="rgba(255,255,255,0.75)" letter-spacing="6">Tasks</text>
 </svg>
