@@ -739,9 +739,7 @@ async function saveToGist() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  /* Debounce : attend 800ms d'inactivité avant d'envoyer au Gist */
-  clearTimeout(_syncTimeout);
-  _syncTimeout = setTimeout(saveToGist, 800);
+  saveToGist();
 }
 
 function load() {
