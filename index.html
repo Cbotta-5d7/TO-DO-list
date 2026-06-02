@@ -697,6 +697,15 @@ function showSyncStatus(status, msg) {
 
 async function loadFromGist() {
   if (!getToken()) { showSyncStatus('error', '⚙️ Token manquant'); render(); return; }
+
+  /* Si localStorage a des données, on les garde et on pousse vers Gist */
+  if (tasks.length > 0) {
+    showSyncStatus('saving', 'Sauvegarde…');
+    await saveToGist();
+    return;
+  }
+
+  /* localStorage vide → on charge depuis le Gist (nouvel appareil) */
   showSyncStatus('saving', 'Chargement…');
   try {
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -706,24 +715,12 @@ async function loadFromGist() {
     const data = await res.json();
     const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
     const remote = JSON.parse(content);
-    const remoteSavedAt = remote.savedAt || '1970-01-01';
-    const localSavedAt  = localStorage.getItem(STORAGE_KEY + '_ts') || '1970-01-01';
-
-    /* Garde la version la plus récente */
-    if (localSavedAt > remoteSavedAt && (remote.tasks||[]).length <= tasks.length) {
-      /* Local plus récent → on pousse vers Gist */
-      showSyncStatus('saving', 'Mise à jour Gist…');
-      await saveToGist();
-    } else {
-      tasks = remote.tasks || [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      localStorage.setItem(STORAGE_KEY + '_ts', remoteSavedAt);
-      showSyncStatus('ok', 'Synchronisé');
-      render();
-    }
+    tasks = remote.tasks || [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    showSyncStatus('ok', 'Synchronisé ✓');
+    render();
   } catch(e) {
-    try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { tasks = []; }
-    showSyncStatus('error', 'Hors ligne — données locales');
+    showSyncStatus('error', 'Hors ligne ⚠️');
     render();
   }
 }
@@ -731,19 +728,16 @@ async function loadFromGist() {
 async function saveToGist() {
   if (!getToken()) return;
   showSyncStatus('saving', 'Sauvegarde…');
-  const payload = { tasks, savedAt: new Date().toISOString() };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  localStorage.setItem(STORAGE_KEY + '_ts', payload.savedAt);
   try {
+    const body = JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify({ tasks, savedAt: new Date().toISOString() }) } } });
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
-      keepalive: true,
+      method: 'PATCH', keepalive: true,
       headers: {
         'Authorization': `token ${getToken()}`,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(payload) } } })
+      body
     });
     if (!res.ok) throw new Error(res.status);
     showSyncStatus('ok', 'Synchronisé ✓');
