@@ -453,8 +453,9 @@
     width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
     background: #f1f5f9; border: 1.5px solid var(--border);
     font-size: 1.1rem; transition: background .15s; flex-shrink: 0;
+    user-select: none; -webkit-tap-highlight-color: transparent;
   }
-  .photo-icon-btn:hover { background: #e2e8f0; }
+  .photo-icon-btn:hover, .photo-icon-btn:active { background: #e2e8f0; }
   .photo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .photo-thumb {
     position: relative; width: 80px; height: 80px; border-radius: 8px;
@@ -729,9 +730,7 @@
       <div class="form-group">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
           <label style="margin:0">📷 Photos</label>
-          <label class="photo-icon-btn" title="Ajouter une photo">
-            📷<input type="file" accept="image/*" style="display:none" onchange="addModalPhoto(this)">
-          </label>
+          <button type="button" class="photo-icon-btn" onclick="pickPhoto(addModalPhoto)" title="Ajouter une photo">📷</button>
         </div>
         <div class="photo-grid" id="modal-photo-grid"></div>
       </div>
@@ -755,10 +754,7 @@
         style="width:100%;min-height:120px;resize:none;padding:14px;font-size:1.05rem;font-family:inherit;border:1.5px solid var(--border);border-radius:12px;outline:none;line-height:1.5;background:#fafafa"
         onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
       <div style="display:flex;align-items:center;gap:10px">
-        <label class="photo-icon-btn flash-photo-btn" title="Ajouter une photo" style="font-size:1.5rem;padding:8px 12px">
-          📷
-          <input type="file" accept="image/*" style="display:none" onchange="addFlashPhoto(this)">
-        </label>
+        <button type="button" class="photo-icon-btn" onclick="pickPhoto(addFlashPhoto)" title="Ajouter une photo" style="font-size:1.5rem;width:48px;height:48px">📷</button>
         <div class="photo-grid" id="flash-photo-grid" style="flex:1"></div>
       </div>
     </div>
@@ -1215,9 +1211,7 @@ function taskCard(t) {
         <div class="photo-section">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <span class="photo-section-title" style="margin:0">📷 Photos</span>
-            <label class="photo-icon-btn" title="Ajouter une photo">
-              📷<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)">
-            </label>
+            <button type="button" class="photo-icon-btn" onclick="pickPhoto(f=>addPhoto('${t.id}',f))" title="Ajouter une photo">📷</button>
           </div>
           <div class="photo-grid" id="photo-grid-${t.id}">${renderPhotos(t)}</div>
         </div>
@@ -1295,10 +1289,7 @@ function openTaskSheet(id) {
     <div class="photo-section">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <span class="photo-section-title" style="margin:0">📷 Photos</span>
-        <label class="photo-icon-btn" title="Ajouter une photo">
-          📷
-          <input type="file" accept="image/*" style="display:none" onchange="addPhotoSheet('${id}',this)">
-        </label>
+        <button type="button" class="photo-icon-btn" onclick="pickPhoto(f=>addPhotoSheet('${id}',f))" title="Ajouter une photo">📷</button>
       </div>
       <div class="photo-grid" id="sheet-photo-grid">${renderPhotos(t)}</div>
     </div>
@@ -1863,7 +1854,23 @@ function openLightbox(src) {
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
+
+/* ── Photo picker universel (fiable Android) ── */
+let _pickCallback = null;
+function pickPhoto(cb) {
+  _pickCallback = cb;
+  document.getElementById('global-photo-input').value = '';
+  document.getElementById('global-photo-input').click();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('global-photo-input').addEventListener('change', function() {
+    if (this.files[0] && _pickCallback) { _pickCallback(this); _pickCallback = null; }
+  });
+});
 </script>
+
+<!-- Input photo global (hors DOM visible) -->
+<input type="file" id="global-photo-input" accept="image/*" style="display:none">
 
 <!-- FAB Flash -->
 <button class="fab" onclick="openFlash()" title="Créer une tâche flash">
