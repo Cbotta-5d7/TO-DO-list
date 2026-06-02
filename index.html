@@ -174,54 +174,27 @@
   .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
   .tab-alancer.active { color: #6366f1; border-bottom-color: #6366f1; background: #e0e7ff; }
 
-  /* ── Op Status panel (right side) ── */
-  .op-status-panel {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 3px;
-    padding: 8px 10px; border-left: 1px solid var(--border);
-    min-width: 82px; flex-shrink: 0; background: #fafafa;
-    border-radius: 0 var(--radius) 0 0;
-  }
-  .op-status-panel .panel-lbl {
-    font-size: .58rem; text-transform: uppercase; letter-spacing: .4px;
-    color: var(--text-muted); font-weight: 700; margin-bottom: 1px;
-  }
-  .op-radio {
-    display: flex; align-items: center; gap: 5px;
-    width: 100%; cursor: pointer; padding: 3px 6px;
-    border-radius: 6px; transition: background .12s; user-select: none;
-  }
-  .op-radio:hover { background: var(--border); }
-  .op-radio input[type=radio] { display: none; }
-  .op-radio-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 2px solid currentColor; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s;
-  }
-  .op-radio input:checked + .op-radio-dot::after {
-    content: ''; width: 4px; height: 4px;
-    border-radius: 50%; background: currentColor; display: block;
-  }
-  .op-radio-label { font-size: .68rem; font-weight: 600; }
-
-  /* Colors per status */
-  .op-radio.alancer  { color: #6366f1; }
-  .op-radio.encours  { color: #f59e0b; }
-  .op-radio.bloquee  { color: #ef4444; }
-  .op-radio.alancer:has(input:checked)  { background: #e0e7ff; }
-  .op-radio.encours:has(input:checked)  { background: #fef3c7; }
-  .op-radio.bloquee:has(input:checked)  { background: #fee2e2; }
-
-  /* Big pill on card header for quick read */
+  /* ── Op Status panel (right side) — supprimé, remplacé par segmented control dans le détail ── */
   .op-pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 100px;
-    font-size: .72rem; font-weight: 700; letter-spacing: .2px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px; border-radius: 100px;
+    font-size: .7rem; font-weight: 700;
   }
-  .op-pill.alancer  { background: #e0e7ff; color: #4338ca; }
-  .op-pill.encours  { background: #fef3c7; color: #92400e; }
-  .op-pill.bloquee  { background: #fee2e2; color: #b91c1c; }
+  .op-pill.alancer { background: #e0e7ff; color: #4338ca; }
+  .op-pill.encours { background: #fef3c7; color: #92400e; }
+  .op-pill.bloquee { background: #fee2e2; color: #b91c1c; }
+
+  /* Segmented control statut dans le détail */
+  .op-seg { display: flex; gap: 6px; margin-bottom: 14px; }
+  .op-seg-btn {
+    flex: 1; padding: 7px 4px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: #f8fafc; font-size: .75rem; font-weight: 700; cursor: pointer;
+    text-align: center; transition: all .15s; color: var(--text-muted);
+  }
+  .op-seg-btn:hover { border-color: #94a3b8; }
+  .op-seg-btn.active-alancer { background: #e0e7ff; border-color: #6366f1; color: #4338ca; }
+  .op-seg-btn.active-encours { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+  .op-seg-btn.active-bloquee { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
 
   .task-card { display: flex; flex-direction: column; width: 100%; min-width: 0; }
   .task-card-top { display: flex; min-width: 0; overflow: hidden; }
@@ -399,41 +372,38 @@
   }
 
   /* ── Detail Panel (expand) ── */
-  .task-detail {
-    border-top: 1px solid var(--border);
-    display: none;
-  }
+  .task-detail { border-top: 1px solid var(--border); display: none; }
   .task-detail.open { display: block; }
+  .detail-body { padding: 14px 14px 6px; display: flex; flex-direction: column; gap: 12px; }
 
   .detail-desc {
-    padding: 12px 16px 0;
     font-size: .88rem; line-height: 1.6; white-space: pre-wrap;
-    color: var(--text-muted); font-style: italic;
-    border-bottom: 1px solid var(--border); padding-bottom: 12px;
+    color: var(--text); background: #f8fafc; border-radius: 8px;
+    padding: 10px 12px; border-left: 3px solid var(--primary);
   }
+  .detail-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .detail-dates { font-size: .72rem; color: var(--text-muted); display: flex; gap: 12px; flex-wrap: wrap; }
+  .detail-dates span { display: flex; align-items: center; gap: 4px; }
 
   /* ── Action log ── */
-  .action-log { padding: 14px 16px 4px; }
+  .action-log { display: flex; flex-direction: column; gap: 8px; }
   .action-log-title {
-    font-size: .75rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .5px; color: var(--text-muted); margin-bottom: 10px;
-    display: flex; align-items: center; gap: 6px;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 5px;
   }
-  .action-add {
-    display: flex; gap: 8px; margin-bottom: 14px;
-  }
+  .action-add { display: flex; gap: 8px; }
   .action-add input {
-    flex: 1; padding: 8px 12px; border: 1px solid var(--border);
-    border-radius: 8px; font-size: .88rem; font-family: inherit;
-    background: var(--bg); outline: none; transition: border-color .15s;
+    flex: 1; padding: 9px 12px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: .88rem; font-family: inherit;
+    background: #fff; outline: none; transition: border-color .15s;
   }
-  .action-add input:focus { border-color: var(--primary); background: #fff; }
+  .action-add input:focus { border-color: var(--primary); }
   .action-add button {
-    padding: 8px 14px; background: var(--primary); color: #fff;
-    border: none; border-radius: 8px; font-size: .85rem; font-weight: 600;
-    cursor: pointer; white-space: nowrap; transition: background .15s;
+    padding: 9px 14px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: .85rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
   }
-  .action-add button:hover { background: var(--primary-dark); }
 
   .action-entries { display: flex; flex-direction: column; gap: 0; }
   .action-entry {
@@ -1190,61 +1160,64 @@ function taskCard(t) {
 
   return `
   <div class="task-card ${t.status === 'done' ? 'done' : ''} ${isOverdue && t.status !== 'done' ? 'overdue' : ''} priority-${t.priority}" id="card-${t.id}">
-    <div class="task-card-top">
-      <div class="task-card-body">
-        <!-- Ligne compacte : checkbox + titre + J-XX + boutons + flèche -->
-        <div class="task-header">
-          <div class="task-check ${t.status === 'done' ? 'checked' : ''}" onclick="toggleDone('${t.id}')" title="${t.status === 'done' ? 'Réouvrir' : 'Marquer terminé'}"></div>
-          <div class="task-title" onclick="toggleDetail('${t.id}')">${escHtml(t.title)}</div>
-          ${t.deadline ? `<span class="task-deadline-chip ${ds||''}">${daysLabel}</span>` : ''}
-          ${(t.actions||[]).length ? `<span style="font-size:.7rem;color:var(--text-muted);flex-shrink:0">⚡${t.actions.length}</span>` : ''}
-          ${(t.photos||[]).length  ? `<span style="font-size:.7rem;color:var(--text-muted);flex-shrink:0">📷${t.photos.length}</span>` : ''}
-          <button class="icon-btn" onclick="openModal('${t.id}')" title="Modifier" style="flex-shrink:0">✏️</button>
-          <button class="icon-btn del" onclick="deleteTask('${t.id}')" title="Supprimer" style="flex-shrink:0">🗑</button>
-          <button class="task-toggle-btn" id="toggle-btn-${t.id}" onclick="toggleDetail('${t.id}')" title="Voir détails">▼</button>
-        </div>
-      </div>
-      ${t.status !== 'done' ? opStatusPanel(t) : ''}
+    <!-- ── Ligne compacte ── -->
+    <div class="task-header">
+      <div class="task-check ${t.status === 'done' ? 'checked' : ''}" onclick="toggleDone('${t.id}')"></div>
+      <div class="task-title" onclick="toggleDetail('${t.id}')">${escHtml(t.title)}</div>
+      ${t.deadline ? `<span class="task-deadline-chip ${ds||''}">${daysLabel}</span>` : ''}
+      <span class="op-pill ${ops}" style="flex-shrink:0">${opsInfo.icon} ${opsInfo.label}</span>
+      ${(t.actions||[]).length ? `<span style="font-size:.7rem;color:var(--text-muted);flex-shrink:0">⚡${t.actions.length}</span>` : ''}
+      ${(t.photos||[]).length  ? `<span style="font-size:.7rem;color:var(--text-muted);flex-shrink:0">📷${t.photos.length}</span>` : ''}
+      <button class="task-toggle-btn" id="toggle-btn-${t.id}" onclick="toggleDetail('${t.id}')">▼</button>
     </div>
-    <!-- Détail dépliable -->
+    <!-- ── Détail dépliable ── -->
     <div class="task-detail" id="detail-${t.id}">
-      <div style="padding:0 12px 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        ${t.category ? `<span class="badge badge-cat">📁 ${escHtml(t.category)}</span>` : ''}
-        <span class="badge badge-prio-${t.priority}">${prioIcon[t.priority]} ${prioLabel[t.priority]}</span>
-        ${t.status !== 'done' ? `<span class="op-pill ${ops}">${opsInfo.icon} ${opsInfo.label}</span>` : ''}
-        ${t.deadline ? `<span class="badge badge-deadline ${ds||''}">📅 ${fmtDate(t.deadline)}</span>` : ''}
-        ${t.assignee ? `<span class="badge" style="background:#f1f5f9;color:var(--text-muted)">👤 ${escHtml(t.assignee)}</span>` : ''}
-      </div>
-      ${t.desc ? `<div class="detail-desc">${escHtml(t.desc)}</div>` : ''}
-      ${timelineHtml(t)}
-      <div class="task-footer">
-        <span>📂 ${fmtDateTime(t.createdAt)}</span>
-        ${t.closedAt ? `<span>🔒 ${fmtDateTime(t.closedAt)}</span>` : ''}
-      </div>
-      <div class="action-log">
-        <div class="action-log-title">⚡ Journal d'actions</div>
-        <div class="action-add">
-          <input type="text" id="action-input-${t.id}" placeholder="Ajouter une action / réalisation…" onkeydown="if(event.key==='Enter')addAction('${t.id}')">
-          <button onclick="addAction('${t.id}')">+ Ajouter</button>
+      <div class="detail-body">
+        <!-- Statut : segmented control -->
+        ${t.status !== 'done' ? `
+        <div class="op-seg">
+          ${Object.entries(OP_STATUS).map(([key,{label,icon}]) =>
+            `<button class="op-seg-btn ${ops===key?'active-'+key:''}" onclick="setOpStatus('${t.id}','${key}')">${icon} ${label}</button>`
+          ).join('')}
+        </div>` : ''}
+        <!-- Description -->
+        ${t.desc ? `<div class="detail-desc">${escHtml(t.desc)}</div>` : ''}
+        <!-- Meta : catégorie, priorité, deadline, assigné -->
+        <div class="detail-meta">
+          ${t.category ? `<span class="badge badge-cat">📁 ${escHtml(t.category)}</span>` : ''}
+          <span class="badge badge-prio-${t.priority}">${prioIcon[t.priority]} ${prioLabel[t.priority]}</span>
+          ${t.deadline ? `<span class="badge badge-deadline ${ds||''}">📅 ${fmtDate(t.deadline)}</span>` : ''}
+          ${t.assignee ? `<span class="badge" style="background:#f1f5f9;color:var(--text-muted)">👤 ${escHtml(t.assignee)}</span>` : ''}
         </div>
-        <div class="action-entries" id="action-entries-${t.id}">
-          ${renderActionEntries(t)}
+        <!-- Timeline -->
+        ${timelineHtml(t)}
+        <!-- Dates -->
+        <div class="detail-dates">
+          <span>📂 Créée ${fmtDateTime(t.createdAt)}</span>
+          ${t.closedAt ? `<span>🔒 Fermée ${fmtDateTime(t.closedAt)}</span>` : ''}
         </div>
-      </div>
-      <div class="photo-section">
-        <div class="photo-section-title">📷 Photos</div>
-        <div class="photo-add">
-          <label class="cam" title="Prendre une photo">
-            📷 Appareil photo
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${t.id}',this)">
-          </label>
-          <label title="Choisir depuis la galerie">
-            🖼 Galerie
-            <input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)">
-          </label>
+        <!-- Actions -->
+        <div class="action-log">
+          <div class="action-log-title">⚡ Journal d'actions</div>
+          <div class="action-add">
+            <input type="text" id="action-input-${t.id}" placeholder="Ajouter une action…" onkeydown="if(event.key==='Enter')addAction('${t.id}')">
+            <button onclick="addAction('${t.id}')">+ Ajouter</button>
+          </div>
+          <div class="action-entries" id="action-entries-${t.id}">${renderActionEntries(t)}</div>
         </div>
-        <div class="photo-grid" id="photo-grid-${t.id}">
-          ${renderPhotos(t)}
+        <!-- Photos -->
+        <div class="photo-section">
+          <div class="photo-section-title">📷 Photos</div>
+          <div class="photo-add">
+            <label class="cam">📷 Caméra<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${t.id}',this)"></label>
+            <label>🖼 Galerie<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)"></label>
+          </div>
+          <div class="photo-grid" id="photo-grid-${t.id}">${renderPhotos(t)}</div>
+        </div>
+        <!-- Actions modifier / supprimer -->
+        <div style="display:flex;gap:8px;padding-top:4px;border-top:1px solid var(--border)">
+          <button class="btn btn-ghost" style="flex:1;font-size:.82rem" onclick="openModal('${t.id}')">✏️ Modifier</button>
+          <button class="btn" style="flex:1;font-size:.82rem;background:#fee2e2;color:#b91c1c;border:none" onclick="deleteTask('${t.id}')">🗑 Supprimer</button>
         </div>
       </div>
     </div>
