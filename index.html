@@ -413,6 +413,38 @@
 
   .badge-actions { background: #e0e7ff; color: var(--primary-dark); }
 
+  /* ── Photos ── */
+  .photo-section { margin-top: 14px; }
+  .photo-section-title { font-size: .8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .photo-add { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .photo-add label {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--primary); color: #fff;
+    border-radius: 8px; font-size: .85rem; font-weight: 600; cursor: pointer;
+    transition: background .15s;
+  }
+  .photo-add label:hover { background: var(--primary-dark); }
+  .photo-add label.cam { background: #0891b2; }
+  .photo-add label.cam:hover { background: #0e7490; }
+  .photo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .photo-thumb {
+    position: relative; width: 80px; height: 80px; border-radius: 8px;
+    overflow: hidden; border: 2px solid var(--border); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-del {
+    position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.6);
+    color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px;
+    font-size: .7rem; cursor: pointer; display: none; align-items: center; justify-content: center;
+  }
+  .photo-thumb:hover .photo-del { display: flex; }
+  /* Lightbox */
+  #lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:9999; align-items:center; justify-content:center; }
+  #lightbox.open { display:flex; }
+  #lightbox img { max-width:95vw; max-height:95vh; border-radius:8px; }
+  #lightbox-close { position:absolute; top:16px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; }
+
   /* ── History view ── */
   .history-table {
     width: 100%; border-collapse: collapse; font-size: .85rem;
@@ -1060,6 +1092,22 @@ function taskCard(t) {
           ${renderActionEntries(t)}
         </div>
       </div>
+      <div class="photo-section">
+        <div class="photo-section-title">📷 Photos</div>
+        <div class="photo-add">
+          <label class="cam" title="Prendre une photo">
+            📷 Appareil photo
+            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${t.id}',this)">
+          </label>
+          <label title="Choisir depuis la galerie">
+            🖼 Galerie
+            <input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)">
+          </label>
+        </div>
+        <div class="photo-grid" id="photo-grid-${t.id}">
+          ${renderPhotos(t)}
+        </div>
+      </div>
     </div>
   </div>`;
 }
@@ -1458,6 +1506,70 @@ function saveToken() {
 
 /* ══ INIT ══ */
 load();
+
+/* ── Photos ── */
+function renderPhotos(t) {
+  return (t.photos || []).map(p => `
+    <div class="photo-thumb" id="pthumb-${p.id}">
+      <img src="${p.data}" alt="photo" onclick="openLightbox('${p.data}')">
+      <button class="photo-del" onclick="deletePhoto('${t.id}','${p.id}')">✕</button>
+    </div>`).join('');
+}
+
+function addPhoto(taskId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      /* Compresse à max 800px */
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const data = canvas.toDataURL('image/jpeg', 0.75);
+      if (!t.photos) t.photos = [];
+      t.photos.push({ id: uid(), data, date: new Date().toISOString() });
+      save();
+      const grid = document.getElementById('photo-grid-' + taskId);
+      if (grid) grid.innerHTML = renderPhotos(t);
+      input.value = '';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function deletePhoto(taskId, photoId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  t.photos = (t.photos || []).filter(p => p.id !== photoId);
+  save();
+  const grid = document.getElementById('photo-grid-' + taskId);
+  if (grid) grid.innerHTML = renderPhotos(t);
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  lb.classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
 </script>
+
+<div id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
 </body>
 </html>
