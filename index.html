@@ -533,6 +533,7 @@
   <div class="header-actions">
     <span id="sync-status" style="font-size:.8rem;font-weight:600;opacity:.9">🔄 Chargement…</span>
     <button class="btn btn-ghost" onclick="openTokenDialog()" title="Configurer la synchronisation">⚙️ Sync</button>
+    <button class="btn btn-success" onclick="forceSave()" title="Forcer la sauvegarde vers le cloud">☁️ Sauvegarder</button>
     <button class="btn btn-ghost" onclick="importExcel()">📂 Importer Excel</button>
     <button class="btn btn-ghost" onclick="exportExcel()">💾 Exporter Excel</button>
     <button class="btn btn-primary" onclick="openModal()">+ Nouvelle tâche</button>
@@ -697,42 +698,29 @@ function showSyncStatus(status, msg) {
 
 async function loadFromGist() {
   if (!getToken()) { showSyncStatus('error', '⚙️ Token manquant'); render(); return; }
-  showSyncStatus('saving', 'Synchronisation…');
+  showSyncStatus('saving', 'Chargement…');
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' }
+    /* cache:'no-store' pour ne jamais récupérer une réponse mise en cache */
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}?_=${Date.now()}`, {
+      headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' },
+      cache: 'no-store'
     });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    const content = data.files[GIST_FILE]?.content || '{"tasks":[],"savedAt":"1970-01-01"}';
+    const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
     const remote = JSON.parse(content);
     const remoteTasks = remote.tasks || [];
-    const remoteDate = remote.savedAt || '1970-01-01';
 
-    /* Prend le plus récent entre Gist et localStorage */
-    const localDate = localStorage.getItem(STORAGE_KEY + '_savedAt') || '1970-01-01';
-
-    if (remoteTasks.length > 0 && remoteDate >= localDate) {
-      /* Gist plus récent ou pareil → utilise Gist */
+    if (remoteTasks.length > 0) {
+      /* Gist a des données → source de vérité */
       tasks = remoteTasks;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteDate);
-      showSyncStatus('ok', 'Synchronisé ✓');
-      render();
     } else if (tasks.length > 0) {
-      /* Local plus récent → pousse vers Gist */
+      /* Gist vide mais local a des données → pousse vers Gist */
       await saveToGist();
-    } else if (remoteTasks.length > 0) {
-      /* Local vide mais Gist a des données → utilise Gist */
-      tasks = remoteTasks;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteDate);
-      showSyncStatus('ok', 'Synchronisé ✓');
-      render();
-    } else {
-      showSyncStatus('ok', 'Synchronisé ✓');
-      render();
     }
+    showSyncStatus('ok', 'Synchronisé ✓');
+    render();
   } catch(e) {
     showSyncStatus('error', 'Hors ligne ⚠️');
     render();
@@ -763,10 +751,18 @@ async function saveToGist() {
 }
 
 function save() {
-  /* Timestamp immédiat → local gagne toujours au prochain rechargement */
   localStorage.setItem(STORAGE_KEY + '_savedAt', new Date().toISOString());
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   saveToGist();
+}
+
+async function forceSave() {
+  if (!getToken()) { toast('⚙️ Configure d\'abord le token Sync !'); return; }
+  if (tasks.length === 0) { toast('Aucune tâche à sauvegarder.'); return; }
+  localStorage.setItem(STORAGE_KEY + '_savedAt', new Date().toISOString());
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  await saveToGist();
+  toast('☁️ Sauvegarde forcée réussie !');
 }
 
 function load() {
