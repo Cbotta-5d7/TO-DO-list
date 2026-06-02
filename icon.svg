@@ -9,8 +9,11 @@
   <!-- Éclair en haut -->
   <polygon points="290,40 158,240 234,240 206,370 358,190 278,190 318,40"
            fill="url(#bolt)"/>
-  <!-- Tasks centré -->
-  <text x="256" y="450" font-family="'Helvetica Neue',Arial,sans-serif"
+  <!-- Tasks + Botta -->
+  <text x="256" y="430" font-family="'Helvetica Neue',Arial,sans-serif"
         font-weight="800" font-size="90" text-anchor="middle"
         fill="white" letter-spacing="-2">Tasks</text>
+  <text x="256" y="490" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-weight="500" font-size="44" text-anchor="middle"
+        fill="rgba(255,255,255,0.55)" letter-spacing="4">Botta</text>
 </svg>

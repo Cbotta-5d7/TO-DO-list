@@ -448,16 +448,13 @@
   /* ── Photos ── */
   .photo-section { margin-top: 14px; }
   .photo-section-title { font-size: .8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
-  .photo-add { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-  .photo-add label {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; background: var(--primary); color: #fff;
-    border-radius: 8px; font-size: .85rem; font-weight: 600; cursor: pointer;
-    transition: background .15s;
+  .photo-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+    background: #f1f5f9; border: 1.5px solid var(--border);
+    font-size: 1.1rem; transition: background .15s; flex-shrink: 0;
   }
-  .photo-add label:hover { background: var(--primary-dark); }
-  .photo-add label.cam { background: #0891b2; }
-  .photo-add label.cam:hover { background: #0e7490; }
+  .photo-icon-btn:hover { background: #e2e8f0; }
   .photo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .photo-thumb {
     position: relative; width: 80px; height: 80px; border-radius: 8px;
@@ -730,15 +727,10 @@
         </div>
       </div>
       <div class="form-group">
-        <label>📷 Photos</label>
-        <div class="photo-add">
-          <label class="cam">
-            📷 Appareil photo
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addModalPhoto(this)">
-          </label>
-          <label>
-            🖼 Galerie
-            <input type="file" accept="image/*" style="display:none" onchange="addModalPhoto(this)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <label style="margin:0">📷 Photos</label>
+          <label class="photo-icon-btn" title="Ajouter une photo">
+            📷<input type="file" accept="image/*" style="display:none" onchange="addModalPhoto(this)">
           </label>
         </div>
         <div class="photo-grid" id="modal-photo-grid"></div>
@@ -753,29 +745,21 @@
 
 <!-- ══ Flash modal ══ -->
 <div class="modal-overlay" id="flash-overlay">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-header">
-      <h2>⚡ Tâche flash</h2>
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header" style="padding:14px 16px 10px">
+      <h2 style="font-size:1rem">⚡ Tâche flash</h2>
       <button class="icon-btn" onclick="closeFlash()">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Titre *</label>
-        <input type="text" id="flash-title" placeholder="De quoi s'agit-il ?" maxlength="100" onkeydown="if(event.key==='Enter')saveFlash()">
-      </div>
-      <div class="form-group">
-        <label>📷 Photo (optionnel)</label>
-        <div class="photo-add">
-          <label class="cam">
-            📷 Caméra
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addFlashPhoto(this)">
-          </label>
-          <label>
-            🖼 Galerie
-            <input type="file" accept="image/*" style="display:none" onchange="addFlashPhoto(this)">
-          </label>
-        </div>
-        <div class="photo-grid" id="flash-photo-grid"></div>
+    <div class="modal-body" style="padding:12px 16px 16px;gap:10px">
+      <textarea id="flash-title" placeholder="Quoi faire ?" maxlength="300"
+        style="width:100%;min-height:120px;resize:none;padding:14px;font-size:1.05rem;font-family:inherit;border:1.5px solid var(--border);border-radius:12px;outline:none;line-height:1.5;background:#fafafa"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label class="photo-icon-btn flash-photo-btn" title="Ajouter une photo" style="font-size:1.5rem;padding:8px 12px">
+          📷
+          <input type="file" accept="image/*" style="display:none" onchange="addFlashPhoto(this)">
+        </label>
+        <div class="photo-grid" id="flash-photo-grid" style="flex:1"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1229,10 +1213,11 @@ function taskCard(t) {
         </div>
         <!-- Photos -->
         <div class="photo-section">
-          <div class="photo-section-title">📷 Photos</div>
-          <div class="photo-add">
-            <label class="cam">📷 Caméra<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${t.id}',this)"></label>
-            <label>🖼 Galerie<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)"></label>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span class="photo-section-title" style="margin:0">📷 Photos</span>
+            <label class="photo-icon-btn" title="Ajouter une photo">
+              📷<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${t.id}',this)">
+            </label>
           </div>
           <div class="photo-grid" id="photo-grid-${t.id}">${renderPhotos(t)}</div>
         </div>
@@ -1308,10 +1293,12 @@ function openTaskSheet(id) {
     </div>
     <!-- Photos -->
     <div class="photo-section">
-      <div class="photo-section-title">📷 Photos</div>
-      <div class="photo-add">
-        <label class="cam">📷 Caméra<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotoSheet('${id}',this)"></label>
-        <label>🖼 Galerie<input type="file" accept="image/*" style="display:none" onchange="addPhotoSheet('${id}',this)"></label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span class="photo-section-title" style="margin:0">📷 Photos</span>
+        <label class="photo-icon-btn" title="Ajouter une photo">
+          📷
+          <input type="file" accept="image/*" style="display:none" onchange="addPhotoSheet('${id}',this)">
+        </label>
       </div>
       <div class="photo-grid" id="sheet-photo-grid">${renderPhotos(t)}</div>
     </div>
@@ -1324,7 +1311,6 @@ function openTaskSheet(id) {
 
   document.getElementById('task-sheet-overlay').classList.add('open');
   document.getElementById('task-sheet').classList.add('open');
-  setTimeout(() => document.getElementById('sheet-action-input')?.focus(), 300);
 }
 
 function closeTaskSheet() {
@@ -1824,8 +1810,9 @@ function addFlashPhoto(input) {
   });
 }
 function saveFlash() {
-  const title = document.getElementById('flash-title').value.trim();
-  if (!title) { document.getElementById('flash-title').focus(); shake('flash-title'); return; }
+  const el = document.getElementById('flash-title');
+  const title = el.value.trim();
+  if (!title) { el.focus(); shake('flash-title'); return; }
   tasks.push({
     id: uid(), title,
     desc: '', category: '', priority: 'medium', deadline: '', assignee: '',
