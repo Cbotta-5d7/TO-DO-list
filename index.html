@@ -1119,13 +1119,15 @@ function render() {
 
   const container = document.getElementById('task-list');
 
-  /* Tabs terminées / toutes → liste simple pleine largeur */
-  if (currentTab === 'done' || currentTab === 'all') {
+  /* Tabs liste simple (done / all / alancer) */
+  if (currentTab === 'done' || currentTab === 'all' || currentTab === 'alancer') {
     const list = sortByDeadline(filterList(currentTab));
+    const emptyIcons = { done: '🎉', all: '📭', alancer: '🚀' };
+    const emptyTexts = { done: 'Aucune tâche terminée', all: 'Aucune tâche', alancer: 'Aucune tâche à lancer' };
     if (!list.length) {
       container.innerHTML = `<div class="empty">
-        <div class="icon">${currentTab === 'done' ? '🎉' : '📭'}</div>
-        <h3>${currentTab === 'done' ? 'Aucune tâche terminée' : 'Aucune tâche'}</h3>
+        <div class="icon">${emptyIcons[currentTab]}</div>
+        <h3>${emptyTexts[currentTab]}</h3>
       </div>`;
       return;
     }
