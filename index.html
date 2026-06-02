@@ -571,6 +571,7 @@
     <button class="btn btn-success" onclick="forceSave()" title="Forcer la sauvegarde vers le cloud">☁️ Sauvegarder</button>
     <button class="btn btn-ghost" onclick="importExcel()">📂 Importer Excel</button>
     <button class="btn btn-ghost" onclick="exportExcel()">💾 Exporter Excel</button>
+    <button class="btn" style="background:#f59e0b;color:#fff" onclick="openFlash()" title="Tâche flash : photo + texte rapide">⚡ Flash</button>
     <button class="btn btn-primary" onclick="openModal()">+ Nouvelle tâche</button>
   </div>
 </header>
@@ -664,10 +665,58 @@
           <input type="text" id="f-assignee" placeholder="Nom…">
         </div>
       </div>
+      <div class="form-group">
+        <label>📷 Photos</label>
+        <div class="photo-add">
+          <label class="cam">
+            📷 Appareil photo
+            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addModalPhoto(this)">
+          </label>
+          <label>
+            🖼 Galerie
+            <input type="file" accept="image/*" style="display:none" onchange="addModalPhoto(this)">
+          </label>
+        </div>
+        <div class="photo-grid" id="modal-photo-grid"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" style="background:#f1f5f9;color:var(--text)" onclick="closeModal()">Annuler</button>
       <button class="btn btn-success" onclick="saveTask()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Flash modal ══ -->
+<div class="modal-overlay" id="flash-overlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2>⚡ Tâche flash</h2>
+      <button class="icon-btn" onclick="closeFlash()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Titre *</label>
+        <input type="text" id="flash-title" placeholder="De quoi s'agit-il ?" maxlength="100" onkeydown="if(event.key==='Enter')saveFlash()">
+      </div>
+      <div class="form-group">
+        <label>📷 Photo (optionnel)</label>
+        <div class="photo-add">
+          <label class="cam">
+            📷 Caméra
+            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addFlashPhoto(this)">
+          </label>
+          <label>
+            🖼 Galerie
+            <input type="file" accept="image/*" style="display:none" onchange="addFlashPhoto(this)">
+          </label>
+        </div>
+        <div class="photo-grid" id="flash-photo-grid"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#f1f5f9;color:var(--text)" onclick="closeFlash()">Annuler</button>
+      <button class="btn" style="background:#f59e0b;color:#fff;font-weight:700" onclick="saveFlash()">⚡ Créer</button>
     </div>
   </div>
 </div>
@@ -1285,8 +1334,52 @@ function deleteTask(id) {
 }
 
 /* ══ MODAL ══ */
+let _modalPhotos = []; /* photos en attente dans le modal */
+
+function renderModalPhotos() {
+  document.getElementById('modal-photo-grid').innerHTML = _modalPhotos.map(p => `
+    <div class="photo-thumb">
+      <img src="${p.data}" alt="">
+      <button class="photo-del" onclick="removeModalPhoto('${p.id}')">✕</button>
+    </div>`).join('');
+}
+function removeModalPhoto(pid) {
+  _modalPhotos = _modalPhotos.filter(p => p.id !== pid);
+  renderModalPhotos();
+}
+function addModalPhoto(input) {
+  compressFile(input.files[0], d => {
+    _modalPhotos.push({ id: uid(), data: d, date: new Date().toISOString() });
+    renderModalPhotos();
+    input.value = '';
+  });
+}
+
+function compressFile(file, cb) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', 0.75));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function openModal(id) {
   editId = id || null;
+  _modalPhotos = [];
   const overlay = document.getElementById('modal-overlay');
   document.getElementById('modal-title').textContent = editId ? 'Modifier la tâche' : 'Nouvelle tâche';
 
@@ -1298,6 +1391,7 @@ function openModal(id) {
     document.getElementById('f-prio').value     = t.priority;
     document.getElementById('f-deadline').value = t.deadline || '';
     document.getElementById('f-assignee').value = t.assignee || '';
+    _modalPhotos = (t.photos || []).map(p => ({...p}));
   } else {
     document.getElementById('f-title').value    = '';
     document.getElementById('f-desc').value     = '';
@@ -1306,6 +1400,7 @@ function openModal(id) {
     document.getElementById('f-deadline').value = '';
     document.getElementById('f-assignee').value = '';
   }
+  renderModalPhotos();
   overlay.classList.add('open');
   setTimeout(() => document.getElementById('f-title').focus(), 50);
 }
@@ -1330,6 +1425,7 @@ function saveTask() {
     t.priority = document.getElementById('f-prio').value;
     t.deadline = document.getElementById('f-deadline').value;
     t.assignee = document.getElementById('f-assignee').value.trim();
+    t.photos   = _modalPhotos;
     toast('Tâche modifiée ✏️');
   } else {
     tasks.push({
@@ -1344,7 +1440,8 @@ function saveTask() {
       closedAt:  null,
       status:    'open',
       opStatus:  'alancer',
-      actions:   []
+      actions:   [],
+      photos:    _modalPhotos
     });
     toast('Tâche créée 🎉');
   }
@@ -1507,6 +1604,41 @@ function saveToken() {
 /* ══ INIT ══ */
 load();
 
+/* ── Flash task ── */
+let _flashPhotos = [];
+
+function openFlash() {
+  _flashPhotos = [];
+  document.getElementById('flash-title').value = '';
+  document.getElementById('flash-photo-grid').innerHTML = '';
+  document.getElementById('flash-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('flash-title').focus(), 50);
+}
+function closeFlash() {
+  document.getElementById('flash-overlay').classList.remove('open');
+}
+function addFlashPhoto(input) {
+  compressFile(input.files[0], d => {
+    _flashPhotos.push({ id: uid(), data: d, date: new Date().toISOString() });
+    document.getElementById('flash-photo-grid').innerHTML = _flashPhotos.map(p => `
+      <div class="photo-thumb"><img src="${p.data}" alt=""></div>`).join('');
+    input.value = '';
+  });
+}
+function saveFlash() {
+  const title = document.getElementById('flash-title').value.trim();
+  if (!title) { document.getElementById('flash-title').focus(); shake('flash-title'); return; }
+  tasks.push({
+    id: uid(), title,
+    desc: '', category: '', priority: 'medium', deadline: '', assignee: '',
+    createdAt: new Date().toISOString(), closedAt: null,
+    status: 'open', opStatus: 'alancer',
+    actions: [], photos: [..._flashPhotos]
+  });
+  save(); closeFlash(); render();
+  toast('⚡ Tâche flash créée !');
+}
+
 /* ── Photos ── */
 function renderPhotos(t) {
   return (t.photos || []).map(p => `
@@ -1517,35 +1649,16 @@ function renderPhotos(t) {
 }
 
 function addPhoto(taskId, input) {
-  const file = input.files[0];
-  if (!file) return;
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      /* Compresse à max 800px */
-      const MAX = 800;
-      let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else       { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const data = canvas.toDataURL('image/jpeg', 0.75);
-      if (!t.photos) t.photos = [];
-      t.photos.push({ id: uid(), data, date: new Date().toISOString() });
-      save();
-      const grid = document.getElementById('photo-grid-' + taskId);
-      if (grid) grid.innerHTML = renderPhotos(t);
-      input.value = '';
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+  compressFile(input.files[0], d => {
+    if (!t.photos) t.photos = [];
+    t.photos.push({ id: uid(), data: d, date: new Date().toISOString() });
+    save();
+    const grid = document.getElementById('photo-grid-' + taskId);
+    if (grid) grid.innerHTML = renderPhotos(t);
+    input.value = '';
+  });
 }
 
 function deletePhoto(taskId, photoId) {
