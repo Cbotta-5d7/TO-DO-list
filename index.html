@@ -29,6 +29,7 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   /* ── Header ── */
@@ -188,9 +189,9 @@
   .op-pill.encours  { background: #fef3c7; color: #92400e; }
   .op-pill.bloquee  { background: #fee2e2; color: #b91c1c; }
 
-  .task-card { display: flex; flex-direction: column; }
-  .task-card-top { display: flex; }
-  .task-card-body { flex: 1; min-width: 0; }
+  .task-card { display: flex; flex-direction: column; width: 100%; min-width: 0; }
+  .task-card-top { display: flex; min-width: 0; overflow: hidden; }
+  .task-card-body { flex: 1; min-width: 0; overflow: hidden; }
 
   .task-card {
     background: var(--card); border-radius: var(--radius);
@@ -278,7 +279,7 @@
   .modal {
     background: var(--card); border-radius: 16px;
     width: 100%; max-width: 560px; max-height: 90vh;
-    overflow-y: auto;
+    overflow-y: auto; overflow-x: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,.25);
     transform: translateY(20px); transition: transform .2s;
   }
@@ -448,60 +449,79 @@
   @media (max-width: 700px) {
     .form-row { grid-template-columns: 1fr; }
 
-    header { padding: 12px 14px; gap: 10px; }
-    header h1 { font-size: 1.2rem; }
-    .header-actions { gap: 6px; }
-    .btn { padding: 6px 10px; font-size: .78rem; }
-    #sync-status { font-size: .72rem; }
+    /* Header : 2 lignes sur mobile */
+    header { padding: 10px 12px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    header h1 { font-size: 1.1rem; }
+    .header-actions { gap: 5px; flex-wrap: wrap; }
+    .btn { padding: 6px 9px; font-size: .75rem; }
+    #sync-status { font-size: .7rem; }
 
-    .container { padding: 12px 10px; }
+    .container { padding: 10px 8px; }
 
-    .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
-    .stat-card { padding: 10px 8px; }
-    .stat-card .num { font-size: 1.5rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; }
+    .stat-card { padding: 10px 6px; }
+    .stat-card .num { font-size: 1.4rem; }
+    .stat-card .lbl { font-size: .65rem; }
 
-    .toolbar { gap: 6px; margin-bottom: 12px; }
-    .toolbar input[type=search] { min-width: 120px; padding: 7px 10px; font-size: .82rem; }
-    .toolbar select { padding: 7px 8px; font-size: .78rem; }
+    .toolbar { gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .toolbar input[type=search] { width: 100%; min-width: unset; padding: 7px 10px; font-size: .82rem; }
+    .toolbar select { flex: 1; padding: 7px 6px; font-size: .78rem; }
 
     .tabs { gap: 0; }
-    .tab { padding: 8px 10px; font-size: .78rem; }
+    .tab { padding: 8px 8px; font-size: .76rem; }
 
-    /* Cartes : panneau statut passe en bas horizontal */
-    .task-card-top { flex-direction: column; }
+    /* Colonnes : toujours 1 seule colonne sur mobile */
+    .two-col { grid-template-columns: 1fr !important; gap: 16px; }
+
+    /* Cartes : 100% largeur, rien ne déborde */
+    .task-card { width: 100%; max-width: 100%; }
+    .task-card-top { flex-direction: column; width: 100%; }
+    .task-card-body { width: 100%; overflow: hidden; }
+
+    /* Panneau statut : barre horizontale en bas de la carte */
     .op-status-panel {
       flex-direction: row; border-left: none;
       border-top: 1px solid var(--border);
       border-radius: 0 0 var(--radius) var(--radius);
-      padding: 8px 12px; gap: 4px; min-width: unset;
-      justify-content: flex-start; background: #fafafa;
+      padding: 6px 10px; gap: 4px; min-width: unset; width: 100%;
+      justify-content: space-around; background: #f8fafc;
     }
     .op-status-panel .panel-lbl { display: none; }
-    .op-radio { width: auto; padding: 4px 10px; border-radius: 100px; }
-    .op-radio-label { font-size: .75rem; }
+    .op-radio { width: auto; padding: 5px 12px; border-radius: 100px; flex: 1; justify-content: center; }
+    .op-radio-label { font-size: .74rem; }
 
-    .task-header { padding: 10px 10px 8px; gap: 8px; }
-    .task-title { font-size: .92rem; }
+    .task-header { padding: 10px 10px 6px; gap: 8px; }
+    .task-main { overflow: hidden; min-width: 0; }
+    .task-title { font-size: .9rem; white-space: normal; }
     .task-desc { font-size: .78rem; }
-    .task-badges { gap: 4px; margin-top: 6px; }
-    .badge { font-size: .65rem; padding: 2px 6px; }
-    .op-pill { font-size: .65rem; padding: 2px 7px; }
+    .task-badges { gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .badge { font-size: .64rem; padding: 2px 6px; }
+    .op-pill { font-size: .64rem; padding: 2px 7px; }
 
-    .task-footer { padding: 0 10px 8px; font-size: .68rem; gap: 8px; }
+    .task-footer { padding: 0 10px 8px; font-size: .67rem; gap: 6px; flex-wrap: wrap; }
 
-    .deadline-block { padding: 8px 10px; gap: 8px; }
-    .jj-badge { font-size: 1.1rem; min-width: 56px; padding: 3px 7px; }
-    .timeline-labels { font-size: .62rem; }
+    .deadline-block { padding: 8px 10px; gap: 8px; flex-wrap: wrap; }
+    .jj-badge { font-size: 1rem; min-width: 52px; padding: 3px 7px; }
+    .timeline-wrap { min-width: 120px; flex: 1; }
+    .timeline-labels { font-size: .6rem; }
 
     .action-log { padding: 10px 10px 4px; }
     .action-add { gap: 6px; }
     .action-add input { padding: 7px 10px; font-size: .82rem; }
     .action-add button { padding: 7px 10px; font-size: .78rem; }
 
-    .col-header h2 { font-size: .9rem; }
+    .col-header h2 { font-size: .88rem; }
+    .col-tasks { gap: 8px; }
 
-    .history-table { font-size: .75rem; }
-    .history-table th, .history-table td { padding: 7px 8px; }
+    /* Modal mobile */
+    .modal-overlay { padding: 8px; align-items: flex-end; }
+    .modal { border-radius: 16px 16px 0 0; max-height: 95vh; }
+    .modal-body { padding: 14px 16px; gap: 12px; }
+    .modal-header { padding: 14px 16px 12px; }
+    .modal-footer { padding: 12px 16px; }
+
+    .history-table { font-size: .72rem; }
+    .history-table th, .history-table td { padding: 6px 6px; }
   }
 </style>
 </head>
@@ -1028,16 +1048,9 @@ function setOpStatus(taskId, status) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
   t.opStatus = status;
-  save();
-  /* Mise à jour du pill sans re-render complet */
-  const card = document.getElementById('card-' + taskId);
-  if (card) {
-    const pill = card.querySelector('.op-pill');
-    if (pill) {
-      pill.className = `op-pill ${status}`;
-      pill.textContent = `${OP_STATUS[status].icon} ${OP_STATUS[status].label}`;
-    }
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  saveToGist();
+  render();
 }
 
 function toggleDetail(id) {
