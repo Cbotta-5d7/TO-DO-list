@@ -6,14 +6,15 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <!-- Éclair en haut -->
-  <polygon points="290,40 158,240 234,240 206,370 358,190 278,190 318,40"
+  <!-- Éclair -->
+  <polygon points="285,40 155,230 232,230 205,340 355,185 272,185 310,40"
            fill="url(#bolt)"/>
-  <!-- Tasks + Botta -->
-  <text x="256" y="430" font-family="'Helvetica Neue',Arial,sans-serif"
-        font-weight="800" font-size="90" text-anchor="middle"
-        fill="white" letter-spacing="-2">Tasks</text>
-  <text x="256" y="490" font-family="'Helvetica Neue',Arial,sans-serif"
-        font-weight="500" font-size="44" text-anchor="middle"
-        fill="rgba(255,255,255,0.55)" letter-spacing="4">Botta</text>
+  <!-- Tasks centré -->
+  <text x="256" y="400" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-weight="800" font-size="86" text-anchor="middle"
+        fill="white">Tasks</text>
+  <!-- Botta plus gros -->
+  <text x="256" y="465" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-weight="600" font-size="58" text-anchor="middle"
+        fill="rgba(255,255,255,0.6)">Botta</text>
 </svg>
