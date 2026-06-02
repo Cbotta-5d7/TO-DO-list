@@ -445,9 +445,63 @@
   }
   #toast.show { transform: translateY(0); opacity: 1; }
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .form-row { grid-template-columns: 1fr; }
-    header { flex-direction: column; align-items: flex-start; }
+
+    header { padding: 12px 14px; gap: 10px; }
+    header h1 { font-size: 1.2rem; }
+    .header-actions { gap: 6px; }
+    .btn { padding: 6px 10px; font-size: .78rem; }
+    #sync-status { font-size: .72rem; }
+
+    .container { padding: 12px 10px; }
+
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+    .stat-card { padding: 10px 8px; }
+    .stat-card .num { font-size: 1.5rem; }
+
+    .toolbar { gap: 6px; margin-bottom: 12px; }
+    .toolbar input[type=search] { min-width: 120px; padding: 7px 10px; font-size: .82rem; }
+    .toolbar select { padding: 7px 8px; font-size: .78rem; }
+
+    .tabs { gap: 0; }
+    .tab { padding: 8px 10px; font-size: .78rem; }
+
+    /* Cartes : panneau statut passe en bas horizontal */
+    .task-card-top { flex-direction: column; }
+    .op-status-panel {
+      flex-direction: row; border-left: none;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 8px 12px; gap: 4px; min-width: unset;
+      justify-content: flex-start; background: #fafafa;
+    }
+    .op-status-panel .panel-lbl { display: none; }
+    .op-radio { width: auto; padding: 4px 10px; border-radius: 100px; }
+    .op-radio-label { font-size: .75rem; }
+
+    .task-header { padding: 10px 10px 8px; gap: 8px; }
+    .task-title { font-size: .92rem; }
+    .task-desc { font-size: .78rem; }
+    .task-badges { gap: 4px; margin-top: 6px; }
+    .badge { font-size: .65rem; padding: 2px 6px; }
+    .op-pill { font-size: .65rem; padding: 2px 7px; }
+
+    .task-footer { padding: 0 10px 8px; font-size: .68rem; gap: 8px; }
+
+    .deadline-block { padding: 8px 10px; gap: 8px; }
+    .jj-badge { font-size: 1.1rem; min-width: 56px; padding: 3px 7px; }
+    .timeline-labels { font-size: .62rem; }
+
+    .action-log { padding: 10px 10px 4px; }
+    .action-add { gap: 6px; }
+    .action-add input { padding: 7px 10px; font-size: .82rem; }
+    .action-add button { padding: 7px 10px; font-size: .78rem; }
+
+    .col-header h2 { font-size: .9rem; }
+
+    .history-table { font-size: .75rem; }
+    .history-table th, .history-table td { padding: 7px 8px; }
   }
 </style>
 </head>
