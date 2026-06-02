@@ -37,20 +37,53 @@
 
   /* ── Header ── */
   header {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    color: #fff;
-    padding: 20px 32px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-    box-shadow: 0 2px 12px rgba(79,70,229,.4);
+    box-shadow: 0 1px 8px rgba(0,0,0,.06);
+    min-height: 64px;
   }
-  header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; }
-  header h1 span { opacity: .7; font-weight: 400; }
-
-  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+  }
+  .header-brand-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(79,70,229,.35);
+  }
+  .header-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .header-brand-title {
+    font-size: 1.05rem; font-weight: 700; color: var(--text);
+    letter-spacing: -.3px;
+  }
+  .header-brand-sub {
+    font-size: .72rem; font-weight: 500; color: var(--text-muted);
+    letter-spacing: .02em; text-transform: uppercase;
+  }
+  .header-actions {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 10px 0;
+  }
+  #sync-status {
+    font-size: .78rem; font-weight: 600; padding: 5px 10px;
+    border-radius: 20px; background: #f1f5f9; color: var(--text-muted);
+    white-space: nowrap;
+  }
+  /* Header buttons override — light mode */
+  header .btn-ghost {
+    background: #f8fafc; color: var(--text); border: 1px solid var(--border);
+  }
+  header .btn-ghost:hover { background: #e2e8f0; }
+  header .btn-primary { box-shadow: 0 2px 6px rgba(79,70,229,.3); }
   .btn {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 8px 16px; border-radius: 8px; border: none;
@@ -485,7 +518,9 @@
     .form-row { grid-template-columns: 1fr; }
 
     /* Header : 2 lignes sur mobile */
-    header { padding: 10px 12px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    header { padding: 0 12px; flex-direction: column; align-items: flex-start; gap: 0; }
+    .header-brand { padding: 10px 0 6px; }
+    .header-actions { padding: 0 0 10px; gap: 5px; }
     header h1 { font-size: 1.1rem; }
     .header-actions { gap: 5px; flex-wrap: wrap; }
     .btn { padding: 6px 9px; font-size: .75rem; }
@@ -564,15 +599,21 @@
 
 <!-- ══ Header ══ -->
 <header>
-  <h1>✅ To Do List <span>Pro</span></h1>
+  <div class="header-brand">
+    <div class="header-brand-icon">✅</div>
+    <div class="header-brand-text">
+      <span class="header-brand-title">To Do List Christophe</span>
+      <span class="header-brand-sub">Pilotage des actions</span>
+    </div>
+  </div>
   <div class="header-actions">
-    <span id="sync-status" style="font-size:.8rem;font-weight:600;opacity:.9">🔄 Chargement…</span>
+    <span id="sync-status">🔄 Chargement…</span>
     <button class="btn btn-ghost" onclick="openTokenDialog()" title="Configurer la synchronisation">⚙️ Sync</button>
-    <button class="btn btn-success" onclick="forceSave()" title="Forcer la sauvegarde vers le cloud">☁️ Sauvegarder</button>
-    <button class="btn btn-ghost" onclick="importExcel()">📂 Importer Excel</button>
-    <button class="btn btn-ghost" onclick="exportExcel()">💾 Exporter Excel</button>
-    <button class="btn" style="background:#f59e0b;color:#fff" onclick="openFlash()" title="Tâche flash : photo + texte rapide">⚡ Flash</button>
-    <button class="btn btn-primary" onclick="openModal()">+ Nouvelle tâche</button>
+    <button class="btn btn-success" onclick="forceSave()" title="Sauvegarder vers le cloud">☁️ Sauvegarder</button>
+    <button class="btn btn-ghost" onclick="importExcel()" title="Importer Excel">📂</button>
+    <button class="btn btn-ghost" onclick="exportExcel()" title="Exporter Excel">💾</button>
+    <button class="btn" style="background:#f59e0b;color:#fff;font-weight:600" onclick="openFlash()" title="Tâche flash">⚡ Flash</button>
+    <button class="btn btn-primary" onclick="openModal()">＋ Nouvelle tâche</button>
   </div>
 </header>
 
