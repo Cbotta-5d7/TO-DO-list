@@ -705,12 +705,23 @@ async function loadFromGist() {
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
-    tasks = JSON.parse(content).tasks || [];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    showSyncStatus('ok', 'Synchronisé');
-    render();
+    const remote = JSON.parse(content);
+    const remoteSavedAt = remote.savedAt || '1970-01-01';
+    const localSavedAt  = localStorage.getItem(STORAGE_KEY + '_ts') || '1970-01-01';
+
+    /* Garde la version la plus récente */
+    if (localSavedAt > remoteSavedAt && (remote.tasks||[]).length <= tasks.length) {
+      /* Local plus récent → on pousse vers Gist */
+      showSyncStatus('saving', 'Mise à jour Gist…');
+      await saveToGist();
+    } else {
+      tasks = remote.tasks || [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_ts', remoteSavedAt);
+      showSyncStatus('ok', 'Synchronisé');
+      render();
+    }
   } catch(e) {
-    /* Fallback local */
     try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { tasks = []; }
     showSyncStatus('error', 'Hors ligne — données locales');
     render();
@@ -718,17 +729,21 @@ async function loadFromGist() {
 }
 
 async function saveToGist() {
+  if (!getToken()) return;
   showSyncStatus('saving', 'Sauvegarde…');
+  const payload = { tasks, savedAt: new Date().toISOString() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  localStorage.setItem(STORAGE_KEY + '_ts', payload.savedAt);
   try {
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: 'PATCH',
+      keepalive: true,
       headers: {
         'Authorization': `token ${getToken()}`,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify({ tasks }) } } })
+      body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(payload) } } })
     });
     if (!res.ok) throw new Error(res.status);
     showSyncStatus('ok', 'Synchronisé ✓');
