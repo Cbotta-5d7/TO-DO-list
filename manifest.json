@@ -6,8 +6,8 @@
   "scope": "/TO-DO-list/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1e1b4b",
-  "theme_color": "#4338ca",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "icons": [
     {
       "src": "icon.svg",
