@@ -622,6 +622,7 @@ function showSyncStatus(status, msg) {
 }
 
 async function loadFromGist() {
+  if (!getToken()) { showSyncStatus('error', '⚙️ Token manquant'); render(); return; }
   showSyncStatus('saving', 'Chargement…');
   try {
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -1314,7 +1315,9 @@ function handleImport(e) {
         };
         if (existing) { Object.assign(existing, task); } else { tasks.push(task); imported++; }
       });
-      save(); render();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      render();
+      saveToGist();
       toast(`Import terminé : ${imported} ajoutée(s), ${rows.length - imported - skipped} mise(s) à jour.`);
     } catch (err) {
       toast('Erreur lors de l\'import Excel ❌');
@@ -1370,13 +1373,6 @@ function saveToken() {
 
 /* ══ INIT ══ */
 load();
-if (!getToken()) {
-  /* Pas de token → invite à configurer après chargement */
-  setTimeout(() => {
-    showSyncStatus('error', 'Cliquez ⚙️ Sync pour activer');
-    openTokenDialog();
-  }, 500);
-}
 </script>
 </body>
 </html>
