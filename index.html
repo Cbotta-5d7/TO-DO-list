@@ -697,28 +697,42 @@ function showSyncStatus(status, msg) {
 
 async function loadFromGist() {
   if (!getToken()) { showSyncStatus('error', '⚙️ Token manquant'); render(); return; }
-
-  /* Si localStorage a des données, on les garde et on pousse vers Gist */
-  if (tasks.length > 0) {
-    showSyncStatus('saving', 'Sauvegarde…');
-    await saveToGist();
-    return;
-  }
-
-  /* localStorage vide → on charge depuis le Gist (nouvel appareil) */
-  showSyncStatus('saving', 'Chargement…');
+  showSyncStatus('saving', 'Synchronisation…');
   try {
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
+    const content = data.files[GIST_FILE]?.content || '{"tasks":[],"savedAt":"1970-01-01"}';
     const remote = JSON.parse(content);
-    tasks = remote.tasks || [];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    showSyncStatus('ok', 'Synchronisé ✓');
-    render();
+    const remoteTasks = remote.tasks || [];
+    const remoteDate = remote.savedAt || '1970-01-01';
+
+    /* Prend le plus récent entre Gist et localStorage */
+    const localDate = localStorage.getItem(STORAGE_KEY + '_savedAt') || '1970-01-01';
+
+    if (remoteTasks.length > 0 && remoteDate >= localDate) {
+      /* Gist plus récent ou pareil → utilise Gist */
+      tasks = remoteTasks;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteDate);
+      showSyncStatus('ok', 'Synchronisé ✓');
+      render();
+    } else if (tasks.length > 0) {
+      /* Local plus récent → pousse vers Gist */
+      await saveToGist();
+    } else if (remoteTasks.length > 0) {
+      /* Local vide mais Gist a des données → utilise Gist */
+      tasks = remoteTasks;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteDate);
+      showSyncStatus('ok', 'Synchronisé ✓');
+      render();
+    } else {
+      showSyncStatus('ok', 'Synchronisé ✓');
+      render();
+    }
   } catch(e) {
     showSyncStatus('error', 'Hors ligne ⚠️');
     render();
@@ -727,9 +741,11 @@ async function loadFromGist() {
 
 async function saveToGist() {
   if (!getToken()) return;
+  if (tasks.length === 0) return; /* Ne jamais écraser avec données vides */
   showSyncStatus('saving', 'Sauvegarde…');
+  const savedAt = new Date().toISOString();
   try {
-    const body = JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify({ tasks, savedAt: new Date().toISOString() }) } } });
+    const body = JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify({ tasks, savedAt }) } } });
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: 'PATCH', keepalive: true,
       headers: {
@@ -740,6 +756,7 @@ async function saveToGist() {
       body
     });
     if (!res.ok) throw new Error(res.status);
+    localStorage.setItem(STORAGE_KEY + '_savedAt', savedAt);
     showSyncStatus('ok', 'Synchronisé ✓');
   } catch(e) {
     showSyncStatus('error', 'Erreur sync ⚠️');
