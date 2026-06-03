@@ -392,13 +392,25 @@
     letter-spacing: .5px; color: var(--text-muted);
     display: flex; align-items: center; gap: 5px;
   }
-  .action-add { display: flex; gap: 8px; }
+  .action-add { display: flex; flex-direction: column; gap: 6px; }
+  .action-add-row { display: flex; gap: 8px; }
   .action-add input {
     flex: 1; padding: 9px 12px; border: 1.5px solid var(--border);
     border-radius: 10px; font-size: .88rem; font-family: inherit;
     background: #fff; outline: none; transition: border-color .15s;
   }
   .action-add input:focus { border-color: var(--primary); }
+  .action-type-toggle {
+    display: flex; gap: 0; border-radius: 10px; overflow: hidden;
+    border: 1.5px solid var(--border); background: #f1f5f9; width: fit-content;
+  }
+  .action-type-btn {
+    padding: 6px 12px; font-size: .78rem; font-weight: 600; border: none;
+    cursor: pointer; background: transparent; color: var(--text-muted);
+    transition: background .15s, color .15s;
+  }
+  .action-type-btn.active-fait { background: #22c55e; color: #fff; }
+  .action-type-btn.active-todo { background: #6366f1; color: #fff; }
   .action-add button {
     padding: 9px 14px; background: var(--primary); color: #fff;
     border: none; border-radius: 10px; font-size: .85rem; font-weight: 600;
@@ -1213,8 +1225,14 @@ function taskCard(t) {
         <div class="action-log">
           <div class="action-log-title">⚡ Journal d'actions</div>
           <div class="action-add">
-            <input type="text" id="action-input-${t.id}" placeholder="Ajouter une action…" onkeydown="if(event.key==='Enter')addAction('${t.id}')">
-            <button onclick="addAction('${t.id}')">+ Ajouter</button>
+            <div class="action-type-toggle" id="action-toggle-${t.id}">
+              <button class="action-type-btn active-fait" onclick="setActionType('${t.id}','fait')">✓ Réalisé</button>
+              <button class="action-type-btn" onclick="setActionType('${t.id}','todo')">☑ À faire</button>
+            </div>
+            <div class="action-add-row">
+              <input type="text" id="action-input-${t.id}" placeholder="Ajouter une action…" onkeydown="if(event.key==='Enter')addAction('${t.id}')">
+              <button onclick="addAction('${t.id}')">+ Ajouter</button>
+            </div>
           </div>
           <div class="action-entries" id="action-entries-${t.id}">${renderActionEntries(t)}</div>
         </div>
@@ -1291,8 +1309,14 @@ function openTaskSheet(id) {
     <div class="action-log">
       <div class="action-log-title">⚡ Journal d'actions</div>
       <div class="action-add">
-        <input type="text" id="sheet-action-input" placeholder="Ajouter une action…" onkeydown="if(event.key==='Enter')addActionSheet('${id}')">
-        <button onclick="addActionSheet('${id}')">+ Ajouter</button>
+        <div class="action-type-toggle" id="sheet-action-toggle">
+          <button class="action-type-btn active-fait" onclick="setActionType('sheet','fait')">✓ Réalisé</button>
+          <button class="action-type-btn" onclick="setActionType('sheet','todo')">☑ À faire</button>
+        </div>
+        <div class="action-add-row">
+          <input type="text" id="sheet-action-input" placeholder="Ajouter une action…" onkeydown="if(event.key==='Enter')addActionSheet('${id}')">
+          <button onclick="addActionSheet('${id}')">+ Ajouter</button>
+        </div>
       </div>
       <div class="action-entries" id="sheet-action-entries">${renderActionEntries(t)}</div>
     </div>
@@ -1339,7 +1363,8 @@ function addActionSheet(taskId) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
   if (!t.actions) t.actions = [];
-  t.actions.push({ id: uid(), text, done: false, date: new Date().toISOString() });
+  const isDone = getActionType('sheet-action-toggle') === 'fait';
+  t.actions.push({ id: uid(), text, done: isDone, date: new Date().toISOString() });
   inp.value = '';
   save();
   const entries = document.getElementById('sheet-action-entries');
@@ -1361,18 +1386,39 @@ function addPhotoSheet(taskId, input) {
   });
 }
 
+function setActionType(toggleId, type) {
+  const el = document.getElementById(toggleId === 'sheet' ? 'sheet-action-toggle' : 'action-toggle-' + toggleId);
+  if (!el) return;
+  el.querySelectorAll('.action-type-btn').forEach(btn => btn.classList.remove('active-fait','active-todo'));
+  const btn = el.querySelector(type === 'fait' ? ':first-child' : ':last-child');
+  if (btn) btn.classList.add('active-' + type);
+}
+
+function getActionType(toggleId) {
+  const el = document.getElementById(toggleId);
+  if (!el) return 'fait';
+  return el.querySelector('.active-todo') ? 'todo' : 'fait';
+}
+
 function renderActionEntries(t) {
   const actions = (t.actions || []).slice().reverse();
   if (!actions.length) return '<div style="font-size:.82rem;color:var(--text-muted);padding-bottom:8px;font-style:italic">Aucune action enregistrée.</div>';
-  return actions.map(a => `
+  return actions.map(a => {
+    /* done=true → réalisé (barré vert) ; done=false → à faire (checkbox vide) */
+    const cbClass = a.done ? 'action-cb done' : 'action-cb';
+    const txtClass = a.done ? 'action-text done' : 'action-text';
+    const label = a.done ? 'Remettre en À faire' : 'Marquer Réalisé';
+    const tag = !a.done ? `<span style="font-size:.7rem;background:#e0e7ff;color:#4338ca;border-radius:20px;padding:1px 7px;margin-left:6px;font-weight:600">À faire</span>` : '';
+    return `
     <div class="action-entry">
-      <div class="action-cb ${a.done ? 'done' : ''}" onclick="toggleAction('${t.id}','${a.id}')" title="${a.done ? 'Marquer à faire' : 'Marquer fait'}"></div>
+      <div class="${cbClass}" onclick="toggleAction('${t.id}','${a.id}')" title="${label}"></div>
       <div class="action-body">
-        <div class="action-text ${a.done ? 'done' : ''}">${escHtml(a.text)}</div>
+        <div class="${txtClass}">${escHtml(a.text)}${tag}</div>
         <div class="action-date">🕐 ${fmtDateTime(a.date)}</div>
       </div>
       <button class="action-del" onclick="deleteAction('${t.id}','${a.id}')" title="Supprimer">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function toggleAction(taskId, actionId) {
@@ -1394,7 +1440,8 @@ function addAction(taskId) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
   if (!t.actions) t.actions = [];
-  t.actions.push({ id: uid(), text, done: false, date: new Date().toISOString() });
+  const isDone = getActionType('action-toggle-' + taskId) === 'fait';
+  t.actions.push({ id: uid(), text, done: isDone, date: new Date().toISOString() });
   inp.value = '';
   save();
   /* Mise à jour partielle sans re-render complet */
