@@ -908,12 +908,17 @@ async function syncOnStart() {
   /* Compare timestamp local vs Gist et garde le plus récent */
   if (!getToken()) return;
   const localSavedAt = localStorage.getItem(STORAGE_KEY + '_savedAt') || '';
+  /* Timeout 8s pour iOS Safari qui peut bloquer indéfiniment */
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
     const res = await fetch(`https://api.github.com/gists/${GIST_ID}?_=${Date.now()}`, {
       headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' },
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: ctrl.signal
     });
-    if (!res.ok) return;
+    clearTimeout(timer);
+    if (!res.ok) { showSyncStatus('error', '⚠️ Erreur ' + res.status); return; }
     const data = await res.json();
     const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
     const remote = JSON.parse(content);
@@ -938,9 +943,18 @@ async function syncOnStart() {
       /* Local plus récent ou égal → pousse vers Gist pour le mettre à jour */
       showSyncStatus('ok', '✓ Local à jour');
       saveToGist();
+    } else {
+      showSyncStatus('ok', '✓ Sync OK');
     }
   } catch(e) {
-    showSyncStatus('error', '⚠️ Hors ligne');
+    clearTimeout(timer);
+    if (e.name === 'AbortError') {
+      showSyncStatus('error', '⚠️ Timeout réseau');
+    } else {
+      showSyncStatus('error', '⚠️ Hors ligne');
+    }
+    /* Affiche quand même les données locales si dispo */
+    render();
   }
 }
 
