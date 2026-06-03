@@ -407,17 +407,21 @@
 
   .action-entries { display: flex; flex-direction: column; gap: 0; }
   .action-entry {
-    display: flex; gap: 12px; align-items: flex-start;
+    display: flex; gap: 10px; align-items: flex-start;
     padding: 8px 0; border-bottom: 1px dashed var(--border);
     position: relative;
   }
   .action-entry:last-child { border-bottom: none; padding-bottom: 12px; }
-  .action-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--primary); flex-shrink: 0; margin-top: 5px;
+  .action-cb {
+    width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--primary);
+    flex-shrink: 0; margin-top: 2px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: background .15s, border-color .15s;
   }
+  .action-cb.done { background: #22c55e; border-color: #22c55e; }
+  .action-cb.done::after { content: '✓'; color: white; font-size: .75rem; font-weight: 700; }
   .action-body { flex: 1; min-width: 0; }
-  .action-text { font-size: .88rem; line-height: 1.5; }
+  .action-text { font-size: .88rem; line-height: 1.5; transition: opacity .15s; }
+  .action-text.done { text-decoration: line-through; opacity: .45; }
   .action-date { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
   .action-del {
     background: none; border: none; cursor: pointer; color: var(--text-muted);
@@ -425,6 +429,12 @@
     transition: opacity .15s;
   }
   .action-entry:hover .action-del { opacity: 1; }
+  /* Onglet Mes actions */
+  .myactions-group { background: white; border-radius: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; }
+  .myactions-group-header { padding: 10px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .myactions-group-title { font-size: .88rem; font-weight: 700; flex: 1; }
+  .myactions-count { font-size: .75rem; background: #e0e7ff; color: #4338ca; border-radius: 20px; padding: 2px 8px; }
+  .myactions-list { padding: 0 14px; }
   .action-del:hover { color: var(--danger); background: #fee2e2; }
 
   .badge-actions { background: #e0e7ff; color: var(--primary-dark); }
@@ -677,6 +687,7 @@
   <div class="tabs">
     <button class="tab active" onclick="setTab('open',this)">📋 Actives</button>
     <button class="tab tab-alancer" onclick="setTab('alancer',this)">🚀 À lancer</button>
+    <button class="tab" onclick="setTab('myactions',this)">☑️ Mes actions</button>
     <button class="tab" onclick="setTab('done',this)">✅ Terminées</button>
     <button class="tab" onclick="setTab('all',this)">📁 Toutes</button>
     <button class="tab" onclick="setTab('history',this)">📜 Historique</button>
@@ -1089,6 +1100,7 @@ function render() {
   updateCatFilter();
 
   if (currentTab === 'history') { renderHistory(); return; }
+  if (currentTab === 'myactions') { renderMyActions(); return; }
 
   const container = document.getElementById('task-list');
 
@@ -1327,7 +1339,7 @@ function addActionSheet(taskId) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
   if (!t.actions) t.actions = [];
-  t.actions.push({ id: uid(), text, date: new Date().toISOString() });
+  t.actions.push({ id: uid(), text, done: false, date: new Date().toISOString() });
   inp.value = '';
   save();
   const entries = document.getElementById('sheet-action-entries');
@@ -1354,13 +1366,25 @@ function renderActionEntries(t) {
   if (!actions.length) return '<div style="font-size:.82rem;color:var(--text-muted);padding-bottom:8px;font-style:italic">Aucune action enregistrée.</div>';
   return actions.map(a => `
     <div class="action-entry">
-      <div class="action-dot"></div>
+      <div class="action-cb ${a.done ? 'done' : ''}" onclick="toggleAction('${t.id}','${a.id}')" title="${a.done ? 'Marquer à faire' : 'Marquer fait'}"></div>
       <div class="action-body">
-        <div class="action-text">${escHtml(a.text)}</div>
+        <div class="action-text ${a.done ? 'done' : ''}">${escHtml(a.text)}</div>
         <div class="action-date">🕐 ${fmtDateTime(a.date)}</div>
       </div>
       <button class="action-del" onclick="deleteAction('${t.id}','${a.id}')" title="Supprimer">✕</button>
     </div>`).join('');
+}
+
+function toggleAction(taskId, actionId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const a = (t.actions || []).find(x => x.id === actionId);
+  if (!a) return;
+  a.done = !a.done;
+  save();
+  const entries = document.getElementById('action-entries-' + taskId) || document.getElementById('sheet-action-entries');
+  if (entries) entries.innerHTML = renderActionEntries(t);
+  if (currentTab === 'myactions') render();
 }
 
 function addAction(taskId) {
@@ -1370,7 +1394,7 @@ function addAction(taskId) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
   if (!t.actions) t.actions = [];
-  t.actions.push({ id: uid(), text, date: new Date().toISOString() });
+  t.actions.push({ id: uid(), text, done: false, date: new Date().toISOString() });
   inp.value = '';
   save();
   /* Mise à jour partielle sans re-render complet */
@@ -1410,6 +1434,44 @@ function deleteAction(taskId, actionId) {
     if (cnt === 0 && badgeEl) badgeEl.remove();
     else if (badgeEl) badgeEl.textContent = `⚡ ${cnt} action${cnt>1?'s':''}`;
   }
+}
+
+/* ── Mes actions ── */
+function renderMyActions() {
+  const container = document.getElementById('task-list');
+  /* Collect all pending actions grouped by task */
+  const groups = [];
+  tasks.filter(t => t.status === 'open').forEach(t => {
+    const pending = (t.actions || []).filter(a => !a.done);
+    if (pending.length) groups.push({ t, pending });
+  });
+  if (!groups.length) {
+    container.innerHTML = `<div class="empty"><div class="icon">☑️</div><h3>Aucune action à faire !</h3><p>Toutes vos actions sont cochées 🎉</p></div>`;
+    return;
+  }
+  container.innerHTML = groups.map(({ t, pending }) => `
+    <div class="myactions-group">
+      <div class="myactions-group-header" onclick="openTaskSheet('${t.id}')">
+        <span style="font-size:1rem">${opIcon(t.opStatus)}</span>
+        <span class="myactions-group-title">${escHtml(t.title)}</span>
+        <span class="myactions-count">${pending.length} à faire</span>
+        <span style="color:var(--text-muted);font-size:.8rem">▶</span>
+      </div>
+      <div class="myactions-list action-entries">
+        ${pending.map(a => `
+          <div class="action-entry">
+            <div class="action-cb" onclick="toggleAction('${t.id}','${a.id}')"></div>
+            <div class="action-body">
+              <div class="action-text">${escHtml(a.text)}</div>
+              <div class="action-date">🕐 ${fmtDateTime(a.date)}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function opIcon(opStatus) {
+  return { alancer: '🔵', encours: '🟡', bloquee: '🔴' }[opStatus || 'alancer'] || '🔵';
 }
 
 /* ── History ── */
