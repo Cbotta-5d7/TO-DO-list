@@ -847,9 +847,8 @@ function showSyncStatus(status, msg) {
   el.style.color = status === 'error' ? 'var(--danger)' : status === 'ok' ? 'var(--success)' : '#fff';
 }
 
-/* localStorage = source de vérité absolue.
-   Le Gist est un miroir cloud mis à jour à chaque save().
-   On ne tire du Gist QUE si localStorage est vide (premier lancement sur nouvel appareil). */
+/* localStorage = source de vérité, Gist = miroir cloud.
+   Au démarrage : on compare les timestamps et on garde la version la plus récente. */
 
 async function saveToGist() {
   if (!getToken() || tasks.length === 0) return;
@@ -867,6 +866,8 @@ async function saveToGist() {
       body
     });
     if (!res.ok) throw new Error(res.status);
+    /* Mémorise le timestamp local de cette sauvegarde */
+    localStorage.setItem(STORAGE_KEY + '_savedAt', savedAt);
     showSyncStatus('ok', '✓ Sauvegardé');
   } catch(e) {
     showSyncStatus('error', '⚠️ Erreur sync');
@@ -890,6 +891,7 @@ async function pullFromGist() {
     if (remoteTasks.length > 0) {
       tasks = remoteTasks;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_savedAt', remote.savedAt || new Date().toISOString());
       showSyncStatus('ok', '✓ Synchronisé');
       render();
     } else {
@@ -902,9 +904,51 @@ async function pullFromGist() {
   }
 }
 
+async function syncOnStart() {
+  /* Compare timestamp local vs Gist et garde le plus récent */
+  if (!getToken()) return;
+  const localSavedAt = localStorage.getItem(STORAGE_KEY + '_savedAt') || '';
+  try {
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}?_=${Date.now()}`, {
+      headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' },
+      cache: 'no-store'
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const content = data.files[GIST_FILE]?.content || '{"tasks":[]}';
+    const remote = JSON.parse(content);
+    const remoteTasks = remote.tasks || [];
+    const remoteSavedAt = remote.savedAt || '';
+
+    if (!localSavedAt && remoteTasks.length > 0) {
+      /* Pas de données locales → prend le Gist */
+      tasks = remoteTasks;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteSavedAt);
+      showSyncStatus('ok', '✓ Chargé depuis cloud');
+      render();
+    } else if (remoteSavedAt && localSavedAt && remoteSavedAt > localSavedAt && remoteTasks.length > 0) {
+      /* Gist plus récent → écrase le local */
+      tasks = remoteTasks;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY + '_savedAt', remoteSavedAt);
+      showSyncStatus('ok', '✓ Mis à jour depuis cloud');
+      render();
+    } else if (tasks.length > 0) {
+      /* Local plus récent ou égal → pousse vers Gist pour le mettre à jour */
+      showSyncStatus('ok', '✓ Local à jour');
+      saveToGist();
+    }
+  } catch(e) {
+    showSyncStatus('error', '⚠️ Hors ligne');
+  }
+}
+
 function save() {
   /* Sauvegarde immédiate dans localStorage + envoi async vers Gist */
+  const savedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  localStorage.setItem(STORAGE_KEY + '_savedAt', savedAt);
   saveToGist();
 }
 
@@ -918,14 +962,15 @@ async function forceSave() {
 
 function load() {
   try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { tasks = []; }
-  if (tasks.length === 0 && getToken()) {
-    /* Nouvel appareil ou cache vidé → tire depuis le Gist */
-    pullFromGist();
-  } else {
-    if (getToken()) showSyncStatus('ok', '✓ Local');
-    else showSyncStatus('error', '⚙️ Token manquant');
+  if (!getToken()) {
+    showSyncStatus('error', '⚙️ Token manquant');
     render();
+    return;
   }
+  /* Toujours comparer avec le Gist au démarrage pour garder la version la plus récente */
+  showSyncStatus('saving', 'Synchro…');
+  render();
+  syncOnStart();
 }
 
 let _fileHandle = null;
